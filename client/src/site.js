@@ -31,7 +31,7 @@ export const links = {
   github: 'https://github.com/DhemsonJan',
   githubAlt: 'https://github.com/dhemsonjanpilapiltubod-creator',
   linkedin: 'https://www.linkedin.com/in/dhemson-jan-pilapil-tubod-13b7a8402/',
-  email: 'Dhemsonjanpilapiltubod@gmail.com',
+  email: 'Greatdhemson@gmail.com',
   // TODO(placeholder): point at a hosted PDF once a resume exists.
   resume: '/resume.pdf',
 };
