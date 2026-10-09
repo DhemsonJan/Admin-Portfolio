@@ -9,6 +9,7 @@ import contactRoutes from './routes/contact.routes.js';
 import projectRoutes from './routes/projects.routes.js';
 import adminProjectRoutes from './routes/projects.admin.routes.js';
 import uploadRoutes from './routes/uploads.routes.js';
+import resumeUploadRoutes from './routes\uploads.resume.routes.js';
 import { errorHandler, notFound } from './middleware/errors.js';
 
 export function createApp() {
@@ -85,6 +86,7 @@ export function createApp() {
     app.use('/api/auth', authRoutes);
     app.use('/api', adminProjectRoutes);
     app.use('/api', uploadRoutes);
+    app.use('/api', resumeUploadRoutes);
   }
 
   // Static uploads. Disabled automatically when a cloud storage driver is used.

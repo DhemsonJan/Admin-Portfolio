@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from 'shared/lib/api.js';
 import { useAdminAuth } from './AdminAuthContext.js';
@@ -16,12 +16,19 @@ export default function AdminSettings() {
   const { stats, maxFeatured } = useProjects();
   const toast = useToast();
   const [health, setHealth] = useState(null);
+  const [resumeUrl, setResumeUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
 
   useEffect(() => {
     fetch('/api/health', { credentials: 'include' })
       .then((response) => response.json())
       .then(setHealth)
       .catch(() => setHealth({ ok: false }));
+
+    api.getMeta()
+      .then((m) => setResumeUrl(m.resumeUrl || ''))
+      .catch(() => {});
   }, []);
 
   const endEverywhere = async () => {
@@ -80,6 +87,83 @@ export default function AdminSettings() {
             <button type="button" className="btn btn-quiet btn-sm" onClick={endEverywhere}>
               End all sessions
             </button>
+          </div>
+        </section>
+
+        <section className="form-section">
+          <h2 className="form-section-title">Resume</h2>
+          <p className="field-hint">Upload a PDF to display the "Download Resume" button on the public site.</p>
+
+          <div className="field">
+            <div
+              className={`dropzone ${uploading ? 'is-busy' : ''}`}
+              role="button"
+              tabIndex={0}
+              onClick={() => fileRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click();
+              }}
+            >
+              <div className="dropzone-icon" aria-hidden="true">
+                {uploading ? '⏳' : '⬆'}
+              </div>
+              <div className="dropzone-title">{uploading ? 'Uploading…' : 'Drop resume PDF here'}</div>
+              <div className="dropzone-hint">or click to upload · PDF, up to 8 MB</div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/pdf"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  setUploading(true);
+                  try {
+                    const r = await api.admin.uploadResume(f);
+                    setResumeUrl(r.url);
+                    toast.success('Resume uploaded');
+                  } catch (err) {
+                    toast.fromError(err, 'Upload failed. Please try again.');
+                  } finally {
+                    setUploading(false);
+                    if (fileRef.current) fileRef.current.value = '';
+                  }
+                }}
+              />
+            </div>
+
+            {resumeUrl ? (
+              <div className="kv" style={{ marginTop: '0.75rem' }}>
+                <span>Current resume</span>
+                <span>
+                  <a href={resumeUrl} target="_blank" rel="noreferrer">
+                    View
+                  </a>
+                </span>
+              </div>
+            ) : null}
+
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+              {resumeUrl ? (
+                <button
+                  type="button"
+                  className="btn btn-quiet btn-sm"
+                  onClick={async () => {
+                    try {
+                      await api.admin.clearResume();
+                      setResumeUrl('');
+                      toast.success('Resume removed');
+                    } catch (err) {
+                      toast.fromError(err, 'Could not remove resume.');
+                    }
+                  }}
+                >
+                  Remove resume
+                </button>
+              ) : null}
+              <a className="btn btn-ghost btn-sm" href={resumeUrl} target="_blank" rel="noreferrer" style={{ display: resumeUrl ? 'inline-flex' : 'none' }}>
+                Download
+              </a>
+            </div>
           </div>
         </section>
 

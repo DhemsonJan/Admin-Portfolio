@@ -96,6 +96,12 @@ export const api = {
       for (const file of files) form.append('images', file);
       return request('/admin/uploads/gallery', { method: 'POST', body: form });
     },
+    uploadResume: (file) => {
+      const form = new FormData();
+      form.append('resume', file);
+      return request('/admin/uploads/resume', { method: 'POST', body: form });
+    },
+    clearResume: () => request('/admin/uploads/resume', { method: 'DELETE' }),
   },
 };
 

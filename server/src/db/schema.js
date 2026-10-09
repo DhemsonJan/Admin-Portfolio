@@ -67,6 +67,11 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 
 CREATE INDEX IF NOT EXISTS idx_messages_created ON contact_messages (created_at);
 CREATE INDEX IF NOT EXISTS idx_messages_status  ON contact_messages (status);
+
+CREATE TABLE IF NOT EXISTS settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT ''
+);
 `;
 
 const POSTGRES_DDL = `
@@ -131,6 +136,11 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 
 CREATE INDEX IF NOT EXISTS idx_messages_created ON contact_messages (created_at);
 CREATE INDEX IF NOT EXISTS idx_messages_status  ON contact_messages (status);
+
+CREATE TABLE IF NOT EXISTS settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT ''
+);
 `;
 
 /**

@@ -2,6 +2,7 @@ import express from 'express';
 import { asyncRoute, HttpError } from '../middleware/errors.js';
 import { catalog } from '../lib/validate.js';
 import { findBySlug, listPublished } from '../services/projects.js';
+import { getSetting } from '../services/settings.js';
 
 /**
  * Public, read-only project endpoints.
@@ -46,8 +47,8 @@ router.get(
   }),
 );
 
-router.get('/meta', (_req, res) => {
-  res.json(catalog);
-});
+router.get('/meta', asyncRoute(async (_req, res) => {
+  res.json({ ...catalog, resumeUrl: await getSetting('resume_url') });
+}));
 
 export default router;

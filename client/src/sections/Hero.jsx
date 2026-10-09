@@ -95,6 +95,12 @@ export default function Hero() {
               href={hero.secondary.href}
               className="btn btn-ghost"
               download={hero.secondary.download || undefined}
+              onClick={(e) => {
+                const url = document.querySelector('main')?.dataset?.resume;
+                if (url) {
+                  e.currentTarget.href = url;
+                }
+              }}
             >
               <Icon name="download" size={17} />
               {hero.secondary.label}

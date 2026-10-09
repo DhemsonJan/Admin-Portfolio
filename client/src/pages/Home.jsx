@@ -34,6 +34,7 @@ import api from '../lib/api.js';
 export default function Home() {
   const [projects, setProjects] = useState([]);
   const [status, setStatus] = useState('loading');
+  const [resumeUrl, setResumeUrl] = useState(hero.secondary.href);
 
   useEffect(() => {
     document.title = `${identity.fullName} — ${identity.roleLine}`;
@@ -50,6 +51,10 @@ export default function Home() {
         if (error.name === 'AbortError') return;
         setStatus('error');
       });
+
+    api.getMeta(controller.signal)
+      .then((m) => setResumeUrl(m.resumeUrl || hero.secondary.href))
+      .catch(() => {});
 
     return () => controller.abort();
   }, []);
@@ -78,7 +83,7 @@ export default function Home() {
       <CursorGlow />
       <PublicNav />
 
-      <main id="main">
+      <main id="main" data-resume={resumeUrl}>
         <Hero />
         <Marquee />
         <Statement />
