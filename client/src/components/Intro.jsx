@@ -207,7 +207,7 @@ export default function Intro() {
 
         <div className="intro-mark" aria-hidden="true">
           <span className="intro-mark-ring" />
-          <span className="intro-mark-core">{identity.initials}</span>
+          <img className="intro-mark-photo" src={identity.photo} alt={identity.alt} />
         </div>
 
         <h1 className="intro-title">
@@ -244,8 +244,8 @@ export default function Intro() {
       </div>
 
       <div className="intro-shutter" aria-hidden="true">
-        <span />
-        <span />
+        <span className="intro-shutter-a" />
+        <span className="intro-shutter-b" />
       </div>
     </div>
   );

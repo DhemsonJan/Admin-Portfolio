@@ -9,7 +9,7 @@ import contactRoutes from './routes/contact.routes.js';
 import projectRoutes from './routes/projects.routes.js';
 import adminProjectRoutes from './routes/projects.admin.routes.js';
 import uploadRoutes from './routes/uploads.routes.js';
-import resumeUploadRoutes from './routes\uploads.resume.routes.js';
+import resumeUploadRoutes from './routes/uploads.resume.routes.js';
 import { errorHandler, notFound } from './middleware/errors.js';
 
 export function createApp() {

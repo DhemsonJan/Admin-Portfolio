@@ -18,7 +18,7 @@ import Experience from '../sections/Experience.jsx';
 import Education from '../sections/Education.jsx';
 import Focus from '../sections/Focus.jsx';
 import Contact from '../sections/Contact.jsx';
-import { identity } from '../site.js';
+import { hero, identity } from '../site.js';
 import api from '../lib/api.js';
 
 /**
