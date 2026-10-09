@@ -12,23 +12,32 @@ export default function Footer() {
           </div>
 
           <nav className="site-footer-links" aria-label="Social">
-            <a href={links.github} target="_blank" rel="noreferrer noopener" aria-label="GitHub">
+            <a href={links.github} target="_blank" rel="noreferrer noopener" aria-label="GitHub · @DhemsonJan">
+              <Icon name="github" size={18} />
+            </a>
+            <a href={links.githubAlt} target="_blank" rel="noreferrer noopener" aria-label="GitHub · @dhemsonjanpilapiltubod-creator">
               <Icon name="github" size={18} />
             </a>
             <a href={links.linkedin} target="_blank" rel="noreferrer noopener" aria-label="LinkedIn">
               <Icon name="linkedin" size={18} />
             </a>
-            <a href={mailto} aria-label="Email">
-              <Icon name="mail" size={18} />
+            <a href={mailto} aria-label="Email · Gmail">
+              <Icon name="gmail" size={18} />
             </a>
           </nav>
         </div>
 
         <div className="site-footer-bottom">
           <p>
-            © {footer.year} {identity.fullName}. All rights reserved.
+            © {footer.year} {identity.fullName}. Crafted with care.
           </p>
-          <p className="site-footer-location">{identity.location}</p>
+          <div className="site-footer-meta">
+            <p className="site-footer-location">{identity.location}</p>
+            <a href="#home" className="site-footer-top-link">
+              <span>Back to top</span>
+              <Icon name="arrowUp" size={15} />
+            </a>
+          </div>
         </div>
       </div>
     </footer>

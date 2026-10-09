@@ -27,14 +27,11 @@ export const identity = {
   alt: 'Portrait of Dhemson Jan P. Tubod',
 };
 
-/**
- * TODO(placeholders): replace each of these with real profiles. They are
- * intentionally generic so no link points somewhere that does not exist yet.
- */
 export const links = {
-  github: 'https://github.com/your-username',
-  linkedin: 'https://www.linkedin.com/in/your-username',
-  email: 'you@example.com',
+  github: 'https://github.com/DhemsonJan',
+  githubAlt: 'https://github.com/dhemsonjanpilapiltubod-creator',
+  linkedin: 'https://www.linkedin.com/in/dhemson-jan-pilapil-tubod-13b7a8402/',
+  email: 'Dhemsonjanpilapiltubod@gmail.com',
   // TODO(placeholder): point at a hosted PDF once a resume exists.
   resume: '/resume.pdf',
 };
@@ -207,9 +204,10 @@ export const contact = {
   title: "Let's build something.",
   body: "I'm open to opportunities, collaborations, and projects where I can learn, contribute, and grow.",
   actions: [
-    { label: 'Email Me', href: mailto, icon: 'mail' },
-    { label: 'GitHub', href: links.github, icon: 'github', external: true },
-    { label: 'LinkedIn', href: links.linkedin, icon: 'linkedin', external: true },
+    { label: 'Gmail', value: 'Dhemsonjanpilapiltubod@gmail.com', href: mailto, icon: 'gmail' },
+    { label: 'GitHub', value: '@DhemsonJan', href: links.github, icon: 'github', external: true },
+    { label: 'GitHub', value: '@dhemsonjanpilapiltubod-creator', href: links.githubAlt, icon: 'github', external: true },
+    { label: 'LinkedIn', value: 'Dhemson Jan P. Tubod', href: links.linkedin, icon: 'linkedin', external: true },
   ],
 };
 

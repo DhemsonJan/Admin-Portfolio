@@ -136,6 +136,16 @@ export default function PublicNav() {
                 {item.label}
               </a>
             ))}
+            <a
+              href="#contact"
+              className="site-nav-cta"
+              onClick={(e) => {
+                e.preventDefault();
+                go('#contact');
+              }}
+            >
+              Let's Talk
+            </a>
           </nav>
 
           <button
@@ -173,6 +183,18 @@ export default function PublicNav() {
               {item.label}
             </a>
           ))}
+          <a
+            href="#contact"
+            className="site-drawer-cta"
+            style={{ transitionDelay: `${nav.length * 40}ms` }}
+            onClick={(e) => {
+              e.preventDefault();
+              go('#contact');
+            }}
+          >
+            <span className="site-drawer-index">{String(nav.length + 1).padStart(2, '0')}</span>
+            Let's Talk
+          </a>
         </nav>
       </div>
       {open && <button type="button" className="site-drawer-scrim" aria-label="Close menu" onClick={() => setOpen(false)} />}

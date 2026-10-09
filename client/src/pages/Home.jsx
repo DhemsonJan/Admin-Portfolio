@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import PublicNav from '../components/PublicNav.jsx';
 import Footer from '../components/Footer.jsx';
+import BackToTop from '../components/BackToTop.jsx';
 import ScrollProgress from '../components/fx/ScrollProgress.jsx';
 import CursorGlow from '../components/fx/CursorGlow.jsx';
 import { LoadingBlock } from '../components/Spinner.jsx';
 import Hero from '../sections/Hero.jsx';
+import Marquee from '../components/Marquee.jsx';
 import Statement from '../sections/Statement.jsx';
 import WhatIDo from '../sections/WhatIDo.jsx';
 import FeaturedProject from '../sections/FeaturedProject.jsx';
@@ -75,6 +77,7 @@ export default function Home() {
 
       <main id="main">
         <Hero />
+        <Marquee />
         <Statement />
         <WhatIDo />
         {featured && <FeaturedProject project={featured} />}
@@ -88,6 +91,7 @@ export default function Home() {
       </main>
 
       <Footer />
+      <BackToTop />
     </>
   );
 }

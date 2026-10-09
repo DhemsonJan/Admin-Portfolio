@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "npm install --no-audit --no-fund && npm --prefix client install --no-audit --no-fund && npm --prefix Admin-Portfolio install --no-audit --no-fund && npm --prefix server install --no-audit --no-fund",
-  "buildCommand": "npm run build",
+  "installCommand": "npm install --no-audit --no-fund",
+  "buildCommand": "echo \"build skipped: prebuilt dist is served from client/dist\"",
   "outputDirectory": "client/dist",
   "functions": {
     "api/index.js": {
@@ -15,7 +15,7 @@
     { "source": "/admin/:path*", "destination": "/admin/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "engines": {
-    "node": "22.x"
-  }
+  "redirects": [
+    { "source": "/", "destination": "/admin/", "permanent": false }
+  ]
 }

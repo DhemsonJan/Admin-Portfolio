@@ -149,7 +149,7 @@ function ContactForm() {
         <p className="contact-hint" aria-live="polite">
           {status === 'sent'
             ? 'Thanks — I will reply soon.'
-            : 'Or email me directly at '}
+            : 'Or reach me on Gmail: '}
           {status !== 'sent' && (
             <a href={`mailto:${links.email}`}>{links.email}</a>
           )}
@@ -177,14 +177,19 @@ export default function Contact() {
           <div className="contact-actions">
             {contact.actions.map((action) => (
               <MagneticButton
-                key={action.label}
+                key={action.value}
                 as="a"
                 href={action.href}
-                className="btn btn-ghost"
+                className="btn btn-ghost btn-channel"
                 {...(action.external ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
               >
-                <Icon name={action.icon} size={17} />
-                {action.label}
+                <span className="btn-channel-icon">
+                  <Icon name={action.icon} size={17} />
+                </span>
+                <span className="btn-channel-text">
+                  <span className="btn-channel-label">{action.label}</span>
+                  <span className="btn-channel-value">{action.value}</span>
+                </span>
               </MagneticButton>
             ))}
           </div>
