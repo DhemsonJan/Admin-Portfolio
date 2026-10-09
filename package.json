@@ -1,0 +1,23 @@
+{
+  "name": "nino-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portfolio website with a private, PIN-protected Project Manager CMS.",
+  "scripts": {
+    "dev": "concurrently -n server,client,admin -c cyan,magenta,yellow \"npm:dev:server\" \"npm:dev:client\" \"npm:dev:admin\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "dev:admin": "npm --prefix Admin-Portfolio run dev",
+    "build": "npm --prefix client run build && npm --prefix Admin-Portfolio run build",
+    "preview": "concurrently -n server,client -c cyan,magenta \"npm:start\" \"npm --prefix client run preview\"",
+    "start": "npm --prefix server start",
+    "pin:hash": "npm --prefix server run pin:hash",
+    "seed": "npm --prefix server run seed --"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
