@@ -5,13 +5,14 @@ import { newId, nowIso } from '../lib/ids.js';
 import { clientFingerprint } from '../lib/loginAttempts.js';
 import { asyncRoute, HttpError } from '../middleware/errors.js';
 import { ValidationError } from '../lib/validate.js';
+import { sendContactEmail } from '../services/mailer.js';
 
 /**
  * Public contact form.
  *
- * Messages are validated and stored rather than emailed, so the form works with
- * no third-party credentials. A deployment that wants email delivery can read
- * the `contact_messages` table or add a mailer here.
+ * Every message is validated and stored in `contact_messages`. When mail
+ * credentials are configured (see `config.mail`), the message is also emailed
+ * straight to the owner's inbox so nothing waits on someone opening a CMS.
  *
  * Throttling reuses `login_attempts` so limits stay consistent across processes
  * in a horizontally scaled deployment instead of living in one process's memory.
@@ -102,11 +103,20 @@ router.post(
       'INSERT INTO contact_messages (id, name, email, message, status, created_at) VALUES (?, ?, ?, ?, ?, ?)',
       [id, data.name, data.email, data.message, 'new', nowIso()],
     );
+
+    // Best-effort email to the owner's inbox. Failure must not lose the
+    // visitor's message, so the store above always wins and email only
+    // downgrades the success note.
+    const emailed = await sendContactEmail(data);
+
     await recordMessage(fingerprint);
 
     res.status(201).json({
       ok: true,
-      message: 'Thanks — your message was sent. I will get back to you soon.',
+      emailed,
+      message: emailed
+        ? 'Thanks — your message was sent. I will get back to you soon.'
+        : 'Thanks — your message was received. I will get back to you soon.',
     });
   }),
 );

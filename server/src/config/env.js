@@ -71,6 +71,22 @@ export const config = {
     lockoutMinutes: int(env.LOGIN_LOCKOUT_MINUTES, 15),
   },
 
+  /**
+   * Outbound email. Contact-form messages are sent to `mail.to` through the
+   * configured SMTP account. Gmail works with an app password (not the account
+   * password); keep it in SMTP_PASS.
+   */
+  mail: {
+    enabled: bool(env.MAIL_ENABLED, false),
+    host: env.SMTP_HOST ?? 'smtp.gmail.com',
+    port: int(env.SMTP_PORT, 465),
+    secure: (env.SMTP_SECURE ?? '') === 'true' || int(env.SMTP_PORT, 465) === 465,
+    user: env.SMTP_USER ?? '',
+    pass: env.SMTP_PASS ?? '',
+    from: env.MAIL_FROM ?? '',
+    to: env.MAIL_TO ?? '',
+  },
+
   storage: {
     driver: (env.STORAGE_DRIVER ?? 'local').toLowerCase(),
     uploadDir: resolveFromServer(env.UPLOAD_DIR, './uploads'),

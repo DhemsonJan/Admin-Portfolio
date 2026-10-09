@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import Intro from '../components/Intro.jsx';
 import PublicNav from '../components/PublicNav.jsx';
 import Footer from '../components/Footer.jsx';
 import BackToTop from '../components/BackToTop.jsx';
@@ -64,6 +65,7 @@ export default function Home() {
   if (status === 'loading') {
     return (
       <div className="page-loading">
+        <Intro />
         <LoadingBlock label="Loading portfolio…" />
       </div>
     );
@@ -71,6 +73,7 @@ export default function Home() {
 
   return (
     <>
+      <Intro />
       <ScrollProgress />
       <CursorGlow />
       <PublicNav />
