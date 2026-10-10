@@ -92,7 +92,7 @@ export default function AdminSettings() {
 
         <section className="form-section">
           <h2 className="form-section-title">Resume</h2>
-          <p className="field-hint">Upload a PDF to display the "Download Resume" button on the public site.</p>
+          <p className="field-hint">Upload a PDF or Word (.docx) to display the "Download Resume" button on the public site.</p>
 
           <div className="field">
             <div
@@ -107,12 +107,12 @@ export default function AdminSettings() {
               <div className="dropzone-icon" aria-hidden="true">
                 {uploading ? '⏳' : '⬆'}
               </div>
-              <div className="dropzone-title">{uploading ? 'Uploading…' : 'Drop resume PDF here'}</div>
-              <div className="dropzone-hint">or click to upload · PDF, up to 8 MB</div>
+              <div className="dropzone-title">{uploading ? 'Uploading…' : 'Drop resume here'}</div>
+              <div className="dropzone-hint">or click to upload · PDF or .docx, up to 8 MB</div>
               <input
                 ref={fileRef}
                 type="file"
-                accept="application/pdf"
+                accept=".pdf,.docx"
                 onChange={async (e) => {
                   const f = e.target.files?.[0];
                   if (!f) return;

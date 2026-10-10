@@ -84,7 +84,7 @@ export const config = {
     user: env.SMTP_USER ?? '',
     pass: env.SMTP_PASS ?? '',
     from: env.MAIL_FROM ?? '',
-    to: env.MAIL_TO ?? '',
+    to: env.MAIL_TO ?? 'DhemsonJanT@gmail.com',
   },
 
   storage: {

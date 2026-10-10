@@ -9,7 +9,6 @@ import { ValidationError } from '../lib/validate.js';
 const SIGNATURES = [
   { mime: 'image/jpeg', bytes: [0xff, 0xd8, 0xff] },
   { mime: 'image/png', bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] },
-  { mime: 'application/pdf', bytes: [0x25, 0x50, 0x44, 0x46] },
 ];
 
 const isWebp = (buffer) =>
@@ -21,6 +20,8 @@ export const EXTENSIONS = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
   'image/webp': '.webp',
+  'application/pdf': '.pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
 };
 
 export function sniffImageType(buffer) {
@@ -31,11 +32,30 @@ export function sniffImageType(buffer) {
   return null;
 }
 
-export function sniffPdf(buffer) {
+const DOCUMENT_SIGNATURES = [
+  { mime: 'application/pdf', bytes: [0x25, 0x50, 0x44, 0x46] },
+];
+
+const DOCX_ZIP_SIGNATURE = [0x50, 0x4b, 0x03, 0x04];
+const OPC_CONTENT_TYPES = Buffer.from('[Content_Types].xml');
+
+/** .docx is a ZIP (PK) that must also follow the OOXML container layout. */
+function isDocx(buffer) {
+  if (!buffer || buffer.length < 4) return false;
+  const matchesZip = DOCX_ZIP_SIGNATURE.every((byte, index) => buffer[index] === byte);
+  return matchesZip && buffer.includes(OPC_CONTENT_TYPES);
+}
+
+/**
+ * Sniffs a document's real bytes for PDF or Word (.docx). The browser-supplied
+ * MIME type is attacker-controlled, so the bytes win before anything is stored.
+ */
+export function sniffDocumentType(buffer) {
   if (!buffer || buffer.length < 4) return null;
-  if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) {
-    return 'application/pdf';
+  for (const signature of DOCUMENT_SIGNATURES) {
+    if (signature.bytes.every((byte, index) => buffer[index] === byte)) return signature.mime;
   }
+  if (isDocx(buffer)) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   return null;
 }
 
@@ -74,9 +94,30 @@ export const singleImage = (field) =>
       return next(error);
     });
 
-export const singlePdf = (field) =>
+/** Resumes accept PDF and Word (.docx); everything else is rejected up front. */
+const DOCUMENT_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+
+const documentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: config.storage.maxUploadBytes,
+    files: 1,
+    fields: 30,
+  },
+  fileFilter(_req, file, callback) {
+    if (!DOCUMENT_TYPES.includes(file.mimetype)) {
+      return callback(new ValidationError('Only PDF and Word (.docx) files are accepted.'));
+    }
+    return callback(null, true);
+  },
+});
+
+export const singleDocument = (field) =>
   (req, res, next) =>
-    upload.single(field)(req, res, (error) => {
+    documentUpload.single(field)(req, res, (error) => {
       if (!error) return next();
       if (error instanceof multer.MulterError) {
         if (error.code === 'LIMIT_FILE_SIZE') {
