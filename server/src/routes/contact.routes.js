@@ -62,7 +62,7 @@ async function recentMessages(fingerprint) {
   const since = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString();
   const row = await db.get(
     `SELECT COUNT(*) AS count FROM login_attempts
-     WHERE fingerprint = ? AND success = 0 AND created_at >= ?`,
+     WHERE fingerprint = ? AND success = FALSE AND created_at >= ?`,
     [fingerprint, since],
   );
   return Number(row?.count ?? 0);
@@ -73,7 +73,7 @@ async function recordMessage(fingerprint) {
   await db.run('INSERT INTO login_attempts (fingerprint, created_at, success) VALUES (?, ?, ?)', [
     fingerprint,
     nowIso(),
-    0,
+    false,
   ]);
 }
 
