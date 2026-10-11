@@ -82,10 +82,12 @@ each row features that project.
 
 ## Security model
 
-The Project Manager runs on your own machine and is not deployed. The public
-site sets `EXPOSE_ADMIN=false`, which leaves `/api/auth/login` and every
-project-mutation route out of the build — there is no remote PIN to guess. The
-measures below protect the local CMS.
+The Project Manager is deployed in two places — on its own domain
+(`admin-portfolio-orpin.vercel.app`) and under `/admin/` on the main
+site — both running against the same cloud database. The PIN is the
+boundary: only its bcrypt hash lives in the project's environment
+variables, the plaintext PIN never reaches the browser, and failed
+attempts are rate limited. The measures below keep that boundary tight.
 
 The PIN never reaches the browser.
 
@@ -120,7 +122,7 @@ local development.
 | `PORT` | `4000` | |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed CORS origin for the API |
 | `SERVE_CLIENT` | `true` | Serve `client/dist` from the API process |
-| `EXPOSE_ADMIN` | `true` | Mount login, project mutations and uploads. `false` on the public deployment |
+| `EXPOSE_ADMIN` | `true` | Mount login, project mutations and uploads. Set on every deployment |
 | `DB_CLIENT` | `sqlite` | `sqlite` or `postgres` |
 | `SQLITE_FILE` | `./data/portfolio.db` | Relative to `server/` |
 | `DATABASE_URL` | — | Required when `DB_CLIENT=postgres` |
@@ -142,30 +144,33 @@ local development.
 
 ### The shape of a deployment
 
-The Project Manager is a **local tool**, not part of the public site. Both
-processes talk to the same Postgres database, so publishing from your machine
-updates the live site immediately:
+The Project Manager runs from your machine, from `/admin/` on the
+main site, and from its own domain. All three talk to the same
+Postgres database, so publishing from anywhere updates every site
+immediately:
 
 ```
-your machine                              Vercel (public)
-localhost:5173 -> localhost:4000           yoursite.com -> static client
-  full admin + uploads                      /api/*     -> serverless function
-        |                                    (EXPOSE_ADMIN=false)
-        +--------> Supabase Postgres <-------+
-                     Supabase Storage
+your machine                              Vercel (one repo, two projects)
+localhost:5173 -> localhost:4000        dhemsonjan-portfolio.vercel.app
+  Project Manager + uploads                 /          public portfolio
+        |                                   /admin/*     Project Manager
+        +------> Supabase Postgres <-------+
+                    Supabase Storage        admin-portfolio-orpin.vercel.app
+                                              /            Project Manager (standalone)
+                                              /api/*        its own serverless API
 ```
 
-The public deployment sets `EXPOSE_ADMIN=false`. That omits `/api/auth/*` and
-every write route from the build entirely, so there is no login page and no PIN
-to attack — content only reaches the public site through your machine.
+Both deployments mount the admin surface (`EXPOSE_ADMIN=true`), so
+the Project Manager is reachable from either URL — it is protected
+by the PIN, the bcrypt hash, and the rate limiter, not by obscurity.
 
-`local` storage and `sqlite` both rely on a writable disk, which serverless
-hosts do not have. For a public deployment use `postgres` plus a cloud driver:
+`local` storage and `sqlite` both rely on a writable disk, which
+serverless hosts do not have. Every deployment uses `postgres` plus
+a cloud driver:
 
 - `supabase` — set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. No extra npm
   package; the driver talks to the REST API.
 - `s3` — `npm install @aws-sdk/client-s3` in `server/`, then set `S3_*`.
-
 ### Supabase setup
 
 1. Create a project, then open **Storage** and add a bucket named `portfolio`
@@ -186,36 +191,66 @@ hosts do not have. For a public deployment use `postgres` plus a cloud driver:
 
 ### Vercel
 
-`vercel.json` pins the build: `npm run build` into `client/dist`, with `/api/*`
-rewritten to the `api/index.js` function and everything else falling back to
-`index.html` for client-side routing. `framework` is `null` so Vercel uses those
-values verbatim instead of guessing at the `client/` subdirectory.
+`vercel.ts` picks the configuration at build time from the
+`DEPLOY_TARGET` environment variable, so one repo feeds two
+different projects:
 
-Add these environment variables on the project:
+- **dhemsonjan-portfolio** (default, `DEPLOY_TARGET` unset) serves
+  the prebuilt `client/dist` — the build step is a no-op because the
+  dist is uploaded from your machine — with `/api/*` rewritten to the
+  `api/index.js` function, the Project Manager at `/admin/`, and
+  everything else falling back to `index.html` for client-side
+  routing. `framework` is `null` so Vercel uses those values
+  verbatim instead of guessing at the `client/` subdirectory.
+- **admin-portfolio** sets `DEPLOY_TARGET=admin` (and
+  `ADMIN_STANDALONE=true`) as project environment variables. The
+  admin branch of `vercel.ts` then builds the Project Manager
+  standalone into `Admin-Portfolio/dist` and serves it at `/`, with
+  its own `/api/*` function so the session cookie stays same-origin.
+  Its install command adds `--include=dev`: the project's
+  `NODE_ENV=production` would otherwise make npm skip the dev
+  dependencies (Vite) that the build needs.
+
+Deploy both from the repo root:
+
+```bash
+vercel deploy --prod --yes                                    # public site
+vercel deploy --prod --yes --project admin-portfolio ^
+  --build-env DEPLOY_TARGET=admin                             # Project Manager
+```
+
+Environment variables on **admin-portfolio**:
 
 | Variable | Value |
 | --- | --- |
+| `DEPLOY_TARGET` | `admin` — selects the admin branch of `vercel.ts` |
+| `ADMIN_STANDALONE` | `true` — vite builds the app at `/` |
 | `NODE_ENV` | `production` |
-| `EXPOSE_ADMIN` | `false` |
+| `EXPOSE_ADMIN` | `true` — mounts the login and write routes |
 | `SERVE_CLIENT` | `false` — Vercel serves the static output itself |
-| `CLIENT_ORIGIN` | `https://yourdomain.com` |
-| `DB_CLIENT` | `postgres` |
-| `DATABASE_URL` | Pooled connection string |
-| `STORAGE_DRIVER` | `supabase` |
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET` | As above |
+| `CLIENT_ORIGIN` | `https://admin-portfolio-orpin.vercel.app` |
+| `ADMIN_PIN_HASH` | Your bcrypt hash (`npm run pin:hash`) |
+| `DB_CLIENT`, `DATABASE_URL`, `DB_POOL_MAX` | Same as the public project |
+| `STORAGE_DRIVER`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET` | Same as the public project |
+| `MAIL_ENABLED`, `SMTP_*`, `MAIL_FROM`, `MAIL_TO` | Same as the public project |
 
-Do **not** set `ADMIN_PIN` or `ADMIN_PIN_HASH` on Vercel — there is no admin
-surface there to unlock.
+The public project keeps the same variables, minus
+`DEPLOY_TARGET`/`ADMIN_STANDALONE`, with `CLIENT_ORIGIN` pointing
+at the main domain.
 
 ### Before going live
 
-- Generate the PIN hash for your machine: `npm run pin:hash`, then paste it into
-  `server/.env` as `ADMIN_PIN_HASH` and delete the plaintext `ADMIN_PIN`.
-- Keep `NODE_ENV=development` in `server/.env`; it only ever runs locally.
-- `/api/health` reports the active drivers and whether admin is mounted — a quick
-  way to confirm the public deployment really has it disabled.
+- Generate the PIN hash: `npm run pin:hash`, then set it as
+  `ADMIN_PIN_HASH` on both Vercel projects and in `server/.env`
+  for local development. Never set the plaintext `ADMIN_PIN`
+  anywhere but a throwaway first run.
+- Keep `NODE_ENV=development` in `server/.env`; it only ever runs
+  locally.
+- `/api/health` reports the active drivers and whether admin is
+  mounted — a quick way to confirm what each deployment really has
+  enabled.
 
 ### Two development conveniences to remove
 
-The plaintext `ADMIN_PIN` in `server/.env`, and `NODE_ENV=development`. Both are
-local-only now that the admin surface never leaves your machine.
+The plaintext `ADMIN_PIN` in `server/.env`, and
+`NODE_ENV=development`. Both are local-only.
